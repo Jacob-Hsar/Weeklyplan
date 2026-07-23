@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Student Timetable & Color System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js Library for Pie Chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif, Arial;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #login-screen {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card-bg);
+            padding: 24px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            margin: auto;
+        }
+
+        #login-screen h2 {
+            margin-bottom: 8px;
+            color: var(--text-main);
+            font-size: 20px;
+        }
+
+        #login-screen p {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        #login-screen input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        #login-screen button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #app-screen {
+            display: none;
+            width: 100%;
+            height: 96vh;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        header h1 {
+            color: var(--text-main);
+            font-size: 18px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            background: #f1f5f9;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .user-info span {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        #logout-btn {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafc;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .toolbar button {
+            background: white;
+            border: 1px solid var(--border-color);
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .color-preset {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid #94a3b8;
+            cursor: pointer;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .toolbar input[type="color"] {
+            border: 1px solid var(--border-color);
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            padding: 0;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .data-filter-box {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .data-filter-box input {
+            border: none;
+            outline: none;
+            font-size: 13px;
+            padding: 2px;
+            width: 130px;
+        }
+
+        .toggle-sidebar-btn {
+            background-color: var(--primary) !important;
+            color: white !important;
+            border: none !important;
+            font-size: 13px !important;
+            padding: 6px 12px !important;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 450px;
+            gap: 12px;
+            flex-grow: 1;
+            overflow: hidden;
+            transition: grid-template-columns 0.3s ease;
+        }
+
+        .main-layout.sidebar-hidden {
+            grid-template-columns: 1fr 0px;
+        }
+
+        .main-layout.sidebar-hidden .analytics-container {
+            display: none;
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr !important;
+            }
+            .main-layout.sidebar-hidden .analytics-container {
+                display: flex;
+            }
+        }
+
+        .table-container {
+            width: 100%;
+            height: 100%;
+            overflow-x: auto;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 10px 6px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 14px;
+        }
+
+        .time-col {
+            width: 165px;
+            background-color: #f1f5f9;
+            font-weight: bold;
+            color: #334155;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        td[contenteditable="true"] {
+            background-color: #ffffff;
+            cursor: pointer;
+            outline: none;
+            min-height: 50px;
+        }
+
+        td[contenteditable="true"]:focus {
+            box-shadow: inset 0 0 0 2px var(--primary);
+            z-index: 2;
+            position: relative;
+        }
+
+        tr.filtered-row-hidden {
+            display: none !important;
+        }
+
+        td.filtered-cell-hidden {
+            display: none !important;
+        }
+
+        .analytics-container {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .chart-card, .summary-card {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .chart-card h3, .summary-card h3 {
+            font-size: 14px;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 160px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .summary-filters {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 6px;
+            width: 100%;
+        }
+
+        .summary-filters select {
+            width: 100%;
+            padding: 6px 4px;
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: #f8fafc;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .summary-table-wrapper {
+            max-height: 200px;
+            overflow-y: auto;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            table-layout: fixed;
+        }
+
+        .summary-table th, .summary-table td {
+            padding: 8px 6px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            word-wrap: break-word;
+            word-break: break-all;
+            overflow: hidden;
+        }
+
+        .summary-table th:nth-child(1), .summary-table td:nth-child(1) {
+            width: 50px;
+        }
+        .summary-table th:nth-child(2), .summary-table td:nth-child(2) {
+            width: 170px;
+        }
+        .summary-table th:nth-child(3), .summary-table td:nth-child(3) {
+            width: 160px;
+        }
+
+        .summary-table th {
+            background-color: #e2e8f0;
+            color: var(--text-main);
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login Screen -->
+    <div id="login-screen">
+        <h2>📅 Student Timetable</h2>
+        <p>Enter your username and color coding system</p>
+        <input type="text" id="username-input" placeholder="Enter username..." autocomplete="off">
+        <button id="login-btn">Login</button>
+    </div>
+
+    <!-- Main App Screen -->
+    <div id="app-screen" style="display: none;">
+        <header>
+            <h1>📅 Timetable & Color System</h1>
+            <div class="user-info">
+                <span>👤 User: <span id="displayUsername"></span></span>
+                <button id="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <!-- Formatting Toolbar & Controls -->
+        <div class="toolbar">
+            <div class="toolbar-group">
+                <span style="font-size: 13px; font-weight: bold; color: var(--primary);">Format:</span>
+                <button type="button" onclick="formatText('bold')"><b>B</b></button>
+                <button type="button" onclick="formatText('italic')"><i>I</i></button>
+                <input type="color" id="fontColorPicker" value="#000000" title="Font Color" oninput="changeFontColor(this.value)">
+            </div>
+
+            <div class="toolbar-group">
+                <span style="font-size: 13px; font-weight: bold; color: var(--primary);">Color:</span>
+                <span class="color-preset" style="background-color: #ffffff;" onclick="changeCellBackground('#ffffff')" title="White"></span>
+                <span class="color-preset" style="background-color: #fde047;" onclick="changeCellBackground('#fde047')" title="Yellow"></span>
+                <span class="color-preset" style="background-color: #4ade80;" onclick="changeCellBackground('#4ade80')" title="Green"></span>
+                <span class="color-preset" style="background-color: #60a5fa;" onclick="changeCellBackground('#60a5fa')" title="Blue"></span>
+                <span class="color-preset" style="background-color: #f472b6;" onclick="changeCellBackground('#f472b6')" title="Pink"></span>
+                <input type="color" id="cellBgPicker" value="#ffffff" title="Custom Color" oninput="changeCellBackground(this.value)">
+            </div>
+
+            <div class="toolbar-group">
+                <!-- Data Filter Search Box -->
+                <div class="data-filter-box">
+                    <span>🔍</span>
+                    <input type="text" id="dataSearchInput" placeholder="Search..." oninput="filterTableData(this.value)">
+                </div>
+                <button type="button" class="toggle-sidebar-btn" onclick="toggleSidebar()">📊 Chart</button>
+            </div>
+            
+            <button type="button" onclick="clearFormatting()" style="background-color: #fef2f2; color: #ef4444; border-color: #fecaca; font-size: 12px; padding: 6px 10px;">Clear</button>
+        </div>
+
+        <!-- Layout -->
+        <div class="main-layout" id="mainLayout">
+            <div class="table-container">
+                <table id="timetable">
+                    <thead>
+                        <tr>
+                            <th class="time-col">Time</th>
+                            <th>Mon</th>
+                            <th>Tue</th>
+                            <th>Wed</th>
+                            <th>Thu</th>
+                            <th>Fri</th>
+                            <th>Sat</th>
+                            <th>Sun</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timetable-body"></tbody>
+                </table>
+            </div>
+
+            <div class="analytics-container">
+                <div class="chart-card">
+                    <h3>📊 Pie Chart</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <h3>📋 Summary Table</h3>
+                    <!-- Drop-down Filters for Summary Table -->
+                    <div class="summary-filters">
+                        <select id="filterColor" onchange="applySummaryFilters()">
+                            <option value="">Color</option>
+                        </select>
+                        <select id="filterText" onchange="applySummaryFilters()">
+                            <option value="">Data</option>
+                        </select>
+                        <select id="filterTime" onchange="applySummaryFilters()">
+                            <option value="">Time</option>
+                        </select>
+                    </div>
+
+                    <div class="summary-table-wrapper">
+                        <table class="summary-table">
+                            <thead>
+                                <tr>
+                                    <th>Color</th>
+                                    <th>Data</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="summary-table-body">
+                                <tr><td colspan="3" style="text-align: center; color: #64748b;">No Data Available</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase & Custom Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAg5JCI38D-VNLJ6RETK_e7S77A3teNi4",
+            authDomain: "weeklyplan-6ba26.firebaseapp.com",
+            projectId: "weeklyplan-6ba26",
+            storageBucket: "weeklyplan-6ba26.firebasestorage.app",
+            messagingSenderId: "86057737284",
+            appId: "1:86057737284:web:bfccca596173532daaf011",
+            measurementId: "G-ZPYQ5CCKNV"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const loginScreen = document.getElementById("login-screen");
+        const appScreen = document.getElementById("app-screen");
+        const usernameInput = document.getElementById("username-input");
+        const loginBtn = document.getElementById("login-btn");
+        const logoutBtn = document.getElementById("logout-btn");
+        const displayUsername = document.getElementById("displayUsername");
+        const tbody = document.getElementById("timetable-body");
+        const summaryTableBody = document.getElementById("summary-table-body");
+        const dataSearchInput = document.getElementById("dataSearchInput");
+        const mainLayout = document.getElementById("mainLayout");
+
+        const filterColor = document.getElementById("filterColor");
+        const filterText = document.getElementById("filterText");
+        const filterTime = document.getElementById("filterTime");
+
+        let currentUser = localStorage.getItem("timetable_current_user");
+        let activeCell = null;
+        let savedDataMap = {};
+        let pieChartInstance = null;
+        let allSummaryRowsData = [];
+        const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+        if (currentUser) {
+            startApp(currentUser);
+        }
+
+        loginBtn.addEventListener("click", () => {
+            const username = usernameInput.value.trim();
+            if (username === "") {
+                alert("Please enter a username.");
+                return;
+            }
+            localStorage.setItem("timetable_current_user", username);
+            startApp(username);
+        });
+
+        usernameInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") loginBtn.click();
+        });
+
+        logoutBtn.addEventListener("click", () => {
+            localStorage.removeItem("timetable_current_user");
+            appScreen.style.display = "none";
+            loginScreen.style.display = "block";
+            usernameInput.value = "";
+        });
+
+        window.toggleSidebar = function() {
+            mainLayout.classList.toggle("sidebar-hidden");
+            setTimeout(() => {
+                if(pieChartInstance) pieChartInstance.resize();
+            }, 300);
+        }
+
+        window.formatText = function(command) {
+            document.execCommand(command, false, null);
+        }
+
+        window.changeFontColor = function(color) {
+            document.execCommand('foreColor', false, color);
+            if (activeCell) {
+                saveCellData(activeCell.dataset.row, activeCell.dataset.col);
+            }
+        }
+
+        window.changeCellBackground = function(value) {
+            if (activeCell) {
+                activeCell.style.backgroundColor = value;
+                saveCellData(activeCell.dataset.row, activeCell.dataset.col);
+            } else {
+                alert("Please select a cell first.");
+            }
+        }
+
+        window.clearFormatting = function() {
+            if (activeCell) {
+                activeCell.innerHTML = "";
+                activeCell.style.backgroundColor = "#ffffff";
+                saveCellData(activeCell.dataset.row, activeCell.dataset.col);
+            }
+        }
+
+        async function saveCellData(row, col) {
+            const cell = document.querySelector(`td[data-row='${row}'][data-col='${col}']`) || activeCell;
+            if(!cell) return;
+
+            const cellData = {
+                html: cell.innerHTML,
+                bgColor: rgbToHex(cell.style.backgroundColor) || "#ffffff"
+            };
+
+            const docKey = `time_${row}_day_${col}`;
+            savedDataMap[docKey] = cellData;
+
+            try {
+                const docRef = doc(db, "timetables", currentUser, "cells", docKey);
+                await setDoc(docRef, cellData);
+            } catch (error) {
+                console.error("Error saving data: ", error);
+            }
+            updatePieChartAndSummary();
+            filterTableData(dataSearchInput.value);
+        }
+
+        function rgbToHex(rgb) {
+            if (!rgb || rgb === 'transparent' || rgb === 'white' || rgb === 'rgba(0, 0, 0, 0)') return '#ffffff';
+            if (rgb.startsWith('#')) return rgb;
+            let match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+            if (!match) return '#ffffff';
+            function hex(x) {
+                return ("0" + parseInt(x).toString(16)).slice(-2);
+            }
+            return "#" + hex(match[1]) + hex(match[2]) + hex(match[3]);
+        }
+
+        function formatAMPM(hour) {
+            let ampm = hour >= 12 ? 'PM' : 'AM';
+            let formattedHour = hour % 12;
+            formattedHour = formattedHour ? formattedHour : 12;
+            let hStr = formattedHour < 10 ? '0' + formattedHour : formattedHour;
+            return `${hStr}:00 ${ampm}`;
+        }
+
+        async function startApp(username) {
+            loginScreen.style.display = "none";
+            appScreen.style.display = "flex";
+            displayUsername.textContent = username;
+
+            if (tbody.children.length === 0) {
+                for (let i = 6; i < 22; i++) {
+                    const currentHourStr = formatAMPM(i);
+                    const nextHourStr = formatAMPM(i + 1);
+                    
+                    const row = document.createElement("tr");
+                    row.dataset.row = i;
+
+                    const timeCell = document.createElement("td");
+                    timeCell.className = "time-col";
+                    timeCell.textContent = `${currentHourStr} - ${nextHourStr}`;
+                    row.appendChild(timeCell);
+
+                    for (let j = 0; j < 7; j++) {
+                        const dayCell = document.createElement("td");
+                        dayCell.contentEditable = "true";
+                        dayCell.dataset.row = i;
+                        dayCell.dataset.col = j;
+
+                        dayCell.addEventListener("focus", () => {
+                            activeCell = dayCell;
+                        });
+
+                        dayCell.addEventListener("blur", () => {
+                            saveCellData(i, j);
+                        });
+
+                        row.appendChild(dayCell);
+                    }
+                    tbody.appendChild(row);
+                }
+                initPieChart();
+            }
+
+            await loadUserData(username);
+        }
+
+        async function loadUserData(username) {
+            savedDataMap = {};
+            try {
+                const querySnapshot = await getDocs(collection(db, "timetables", username, "cells"));
+                querySnapshot.forEach((doc) => {
+                    savedDataMap[doc.id] = doc.data();
+                });
+            } catch (error) {
+                console.error("Error loading data: ", error);
+            }
+
+            for (let i = 6; i < 22; i++) {
+                for (let j = 0; j < 7; j++) {
+                    const dayCell = document.querySelector(`td[data-row='${i}'][data-col='${j}']`);
+                    if(dayCell) {
+                        const docKey = `time_${i}_day_${j}`;
+                        if (savedDataMap[docKey]) {
+                            dayCell.innerHTML = savedDataMap[docKey].html || "";
+                            dayCell.style.backgroundColor = savedDataMap[docKey].bgColor || "#ffffff";
+                        } else {
+                            dayCell.innerHTML = "";
+                            dayCell.style.backgroundColor = "#ffffff";
+                        }
+                    }
+                }
+            }
+            updatePieChartAndSummary();
+            filterTableData(dataSearchInput.value);
+        }
+
+        window.filterTableData = function(query) {
+            query = query.trim().toLowerCase();
+            const rows = tbody.querySelectorAll("tr");
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll("td[contenteditable='true']");
+                let rowHasMatch = false;
+
+                cells.forEach(cell => {
+                    const text = cell.textContent.trim().toLowerCase();
+                    if (query === "" || (text !== "" && text.includes(query))) {
+                        cell.classList.remove("filtered-cell-hidden");
+                        rowHasMatch = true;
+                    } else {
+                        cell.classList.add("filtered-cell-hidden");
+                    }
+                });
+
+                if (query === "" || rowHasMatch) {
+                    row.classList.remove("filtered-row-hidden");
+                } else {
+                    row.classList.add("filtered-row-hidden");
+                }
+            });
+        }
+
+        function initPieChart() {
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            pieChartInstance = new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: []
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { font: { family: 'Inter', size: 12 } } 
+                        } 
+                    }
+                }
+            });
+        }
+
+        function updatePieChartAndSummary() {
+            if (!pieChartInstance) return;
+
+            let textCounts = {};
+            let colorMap = {};
+            allSummaryRowsData = [];
+
+            for (let i = 6; i < 22; i++) {
+                for (let j = 0; j < 7; j++) {
+                    const docKey = `time_${i}_day_${j}`;
+                    const data = savedDataMap[docKey];
+                    if (data && data.html && data.html.trim() !== "") {
+                        let tempDiv = document.createElement("div");
+                        tempDiv.innerHTML = data.html;
+                        let textContent = tempDiv.textContent || tempDiv.innerText || "";
+                        textContent = textContent.trim();
+
+                        let bg = data.bgColor ? data.bgColor.toLowerCase() : '#ffffff';
+                        let timeStr = `${formatAMPM(i)} - ${formatAMPM(i+1)} (${dayNames[j]})`;
+                        
+                        if (textContent !== "") {
+                            textCounts[textContent] = (textCounts[textContent] || 0) + 1;
+                            colorMap[textContent] = (bg !== '#ffffff' && bg !== '#fff') ? bg : '#4f46e5';
+                        }
+
+                        allSummaryRowsData.push({
+                            bgColor: bg,
+                            html: data.html,
+                            textContent: textContent,
+                            timeStr: timeStr
+                        });
+                    }
+                }
+            }
+
+            populateDropdowns(allSummaryRowsData);
+            applySummaryFilters();
+
+            let labels = [];
+            let counts = [];
+            let bgColors = [];
+
+            for (let txt in textCounts) {
+                labels.push(txt);
+                counts.push(textCounts[txt]);
+                bgColors.push(colorMap[txt]);
+            }
+
+            pieChartInstance.data.labels = labels;
+            pieChartInstance.data.datasets[0].data = counts;
+            pieChartInstance.data.datasets[0].backgroundColor = bgColors;
+            pieChartInstance.update();
+        }
+
+        function populateDropdowns(dataList) {
+            let colors = [...new Set(dataList.map(item => item.bgColor))];
+            let texts = [...new Set(dataList.map(item => item.textContent))];
+            let times = [...new Set(dataList.map(item => item.timeStr))];
+
+            let curColor = filterColor.value;
+            let curText = filterText.value;
+            let curTime = filterTime.value;
+
+            filterColor.innerHTML = `<option value="">Color</option>` + colors.map(c => `<option value="${c}" ${c === curColor ? 'selected' : ''}>${c === '#ffffff' ? 'White' : c}</option>`).join('');
+            filterText.innerHTML = `<option value="">Data</option>` + texts.map(t => `<option value="${t}" ${t === curText ? 'selected' : ''}>${t}</option>`).join('');
+            filterTime.innerHTML = `<option value="">Time</option>` + times.map(tm => `<option value="${tm}" ${tm === curTime ? 'selected' : ''}>${tm}</option>`).join('');
+        }
+
+        window.applySummaryFilters = function() {
+            let selectedColor = filterColor.value;
+            let selectedText = filterText.value;
+            let selectedTime = filterTime.value;
+
+            let filtered = allSummaryRowsData.filter(item => {
+                let matchColor = !selectedColor || item.bgColor === selectedColor;
+                let matchText = !selectedText || item.textContent === selectedText;
+                let matchTime = !selectedTime || item.timeStr === selectedTime;
+                return matchColor && matchText && matchTime;
+            });
+
+            renderSummaryTable(filtered);
+        }
+
+        function renderSummaryTable(dataList) {
+            if (dataList.length === 0) {
+                summaryTableBody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #64748b;">No Data Available</td></tr>`;
+                return;
+            }
+
+            let summaryHTML = "";
+            dataList.forEach(item => {
+                summaryHTML += `
+                    <tr>
+                        <td style="background-color: ${item.bgColor}; text-align: center;"></td>
+                        <td style="text-align: left; padding-left: 8px; word-break: break-all;">${item.html}</td>
+                        <td style="font-size: 12px; color: #64748b; word-break: break-all; text-align: center;">${item.timeStr}</td>
+                    </tr>
+                `;
+            });
+            summaryTableBody.innerHTML = summaryHTML;
+        }
+    </script>
+</body>
+</html>
